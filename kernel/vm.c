@@ -55,7 +55,7 @@ walkpgdir(pde_t *pgdir, const void *va, int alloc)
 // Create PTEs for virtual addresses starting at va that refer to
 // physical addresses starting at pa. va and size might not
 // be page-aligned.
-static int
+int
 mappages(pde_t *pgdir, void *va, uintptr_t size, uintptr_t pa, int perm)
 {
     char *a, *last;
@@ -105,7 +105,10 @@ static void freept(pte_t *pt) {
 void freevm(pde_t *pgdir) {
     for (int i = 0; i < NPDENTRIES / 2; i++) {
         if (pgdir[i] & PTE_P) {
-            freept((pte_t*)P2V(PTE_ADDR(pgdir[i])));
+            uintptr_t pa = PTE_ADDR(pgdir[i]);
+            if (pa >= (1 << 20)) {
+                freept((pte_t*)P2V(pa));
+            }
         }
     }
     kfree(pgdir);

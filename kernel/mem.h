@@ -16,3 +16,4 @@ void kvmalloc();
 void switchkvm();
 int allocuvm(pde_t *pgdir, uintptr_t base, uintptr_t top);
 void freevm(pde_t *pgdir);
+int mappages(pde_t *pgdir, void *va, uintptr_t size, uintptr_t pa, int perm);

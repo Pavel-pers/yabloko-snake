@@ -5,19 +5,25 @@
 #include "../proc.h"
 #include "../drivers/port.h"
 #include "../console.h"
+#include "../drivers/keyboard.h"
+#include "../drivers/pit.h"
+#include "../drivers/speaker.h"
+#include "drivers/vga.h"
 
-enum {
+enum
+{
     IDT_HANDLERS = 256,
 };
 
-typedef struct {
+typedef struct
+{
     uint16_t low_offset;
     uint16_t selector;
     uint8_t always0;
-    uint8_t type: 4;
-    uint8_t s: 1;
-    uint8_t dpl: 2;
-    uint8_t p: 1;
+    uint8_t type : 4;
+    uint8_t s : 1;
+    uint8_t dpl : 2;
+    uint8_t p : 1;
     uint16_t high_offset;
 } __attribute__((packed)) idt_gate_t;
 
@@ -53,7 +59,7 @@ void init_idt() {
     set_idt_gate(T_SYSCALL, 1, default_handlers[T_SYSCALL], DPL_USER);
 }
 
-const char * const exception_messages[] = {
+const char* const exception_messages[] = {
     [0] = "Division By Zero",
     [1] = "Debug",
     [2] = "Non Maskable Interrupt",
@@ -85,7 +91,7 @@ void register_interrupt_handler(uint8_t i, isr_t handler) {
     interrupt_handlers[i] = handler;
 }
 
-void trap(registers_t *r) {
+void trap(registers_t* r) {
     // EOI
     if (r->int_no >= 40) {
         port_byte_out(0xA0, 0x20); /* follower */
@@ -135,27 +141,66 @@ static int handle_puts(const char* s) {
 
 static void handle_syscall(registers_t* r) {
     switch (r->eax) {
-        case SYS_exit:
-            if (r->ebx == 0) {
-                printk("* success\n");
-            } else {
-                printk("* failure\n");
-            }
-            killproc();
-        case SYS_greet:
-            printk("Hello world!\n");
-            r->eax = 0;
-            break;
-        case SYS_putc:
-            printk((const char[]){r->ebx, '\0'});
-            r->eax = 0;
-            break;
-        case SYS_puts:
-            r->eax = handle_puts(get_userspace_ptr(r->ebx));
-            break;
-        default:
-            printk("Unknown syscall\n");
+    case SYS_exit:
+        if (r->ebx == 0) {
+            printk("* success\n");
+        }
+        else {
+            printk("* failure\n");
+        }
+        killproc();
+    case SYS_greet:
+        printk("Hello world!\n");
+        r->eax = 0;
+        break;
+    case SYS_putc:
+        printk((const char[]){r->ebx, '\0'});
+        r->eax = 0;
+        break;
+    case SYS_puts:
+        r->eax = handle_puts(get_userspace_ptr(r->ebx));
+        break;
+    case SYS_getkeys:
+        // r.ebx - result buffer
+        // r.ecx - max count of keys
+
+        struct KeyboardEvent *ubuf = (struct KeyboardEvent*)get_userspace_ptr(r->ebx);
+        if (!ubuf) {
             r->eax = -1;
+            break;
+        }
+        r->eax = kbd_read_events(ubuf, r->ecx);
+        break;
+    case SYS_time:
+        r->eax = pit_ticks;
+        break;
+    case SYS_setmode13:
+        uintptr_t im_buf = r->ebx;
+        vgaMode13();
+
+        if (mappages(get_cur_pgdir(), (void*)im_buf, 320*200, 0xA0000, PTE_W | PTE_U) < 0) {
+            r->eax = -2;
+            break;
+        }
+        r->eax = 0;
+        break;
+
+    case SYS_setmode3:
+        vgaMode3();
+        vga_clear_screen();
+        r->eax = 0;
+        break;
+    case SYS_sound:
+        if (r->ebx == 0) {
+            off_speaker();
+        } else {
+            setup_speaker(r->ebx);
+        }
+        r->eax = 0;
+        break;
+    default:
+        printk("Unknown syscall\n");
+        r->eax = -1;
     }
 }
 
@@ -181,7 +226,8 @@ static void init_pic() {
     port_byte_out(0xA1, 0x0);
 }
 
-typedef struct {
+typedef struct
+{
     uint16_t limit;
     void* base;
 } __attribute__((packed)) idt_register_t;

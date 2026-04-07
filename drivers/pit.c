@@ -47,6 +47,11 @@ struct pit_command_t {
 
 static void dec_sleep_counter(void);
 
+volatile uint32_t pit_ticks = 0;
+static void inc_pit(void) {
+    pit_ticks++;
+}
+
 void init_pit() {
     struct pit_command_t cmd = {
         .select_channel = PIT_SELECT_CHANNEL0,
@@ -60,6 +65,7 @@ void init_pit() {
 
     register_interrupt_handler(IRQ0, timer_interrupt_handler);
     add_timer_callback(dec_sleep_counter);
+    add_timer_callback(inc_pit);
 }
 
 static int sleep_counter = 0;
@@ -74,3 +80,5 @@ void msleep(int ms) {
         asm("hlt");
     }
 }
+
+

@@ -35,6 +35,10 @@ struct vm {
 void trapret();
 void swtch(void** oldstack, void* newstack);
 
+uintptr_t* get_cur_pgdir(void) {
+    return vm.user_task->pgdir;
+}
+
 void run_elf(const char* name) {
     struct stat statbuf;
     if (stat(name, &statbuf) != 0) {

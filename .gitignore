@@ -13,3 +13,5 @@ user/*.o
 .idea
 __pycache__
 res.txt
+
+*.dSYM/
