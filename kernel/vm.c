@@ -96,7 +96,11 @@ int allocuvm(pde_t *pgdir, uintptr_t base, uintptr_t top) {
 static void freept(pte_t *pt) {
     for (int i = 0; i < NPTENTRIES; i++) {
         if (pt[i] & PTE_P) {
-            kfree((char*)P2V(PTE_ADDR(pt[i])));
+            uintptr_t pa = PTE_ADDR(pt[i]);
+            if (pa >= (1 << 20)) {
+                freept((pte_t*)P2V(pa));
+            }
+            kfree((char*)P2V(pa));
         }
     }
     kfree((char*)pt);

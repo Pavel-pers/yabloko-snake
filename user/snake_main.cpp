@@ -52,10 +52,11 @@ static void game_loop() {
     }
 }
 
-int main() {
+extern "C" int main() {
     render_init();
     Menu::init();
     game_loop();
     render_shutdown();
     return 0;
 }
+

@@ -142,66 +142,86 @@ static int handle_puts(const char* s) {
 static void handle_syscall(registers_t* r) {
     switch (r->eax) {
     case SYS_exit:
-        if (r->ebx == 0) {
-            printk("* success\n");
+        {
+            if (r->ebx == 0) {
+                printk("* success\n");
+            }
+            else {
+                printk("* failure\n");
+            }
+            killproc();
         }
-        else {
-            printk("* failure\n");
-        }
-        killproc();
     case SYS_greet:
-        printk("Hello world!\n");
-        r->eax = 0;
-        break;
+        {
+            printk("Hello world!\n");
+            r->eax = 0;
+            break;
+        }
     case SYS_putc:
-        printk((const char[]){r->ebx, '\0'});
-        r->eax = 0;
-        break;
+        {
+            printk((const char[]){r->ebx, '\0'});
+            r->eax = 0;
+            break;
+        }
     case SYS_puts:
-        r->eax = handle_puts(get_userspace_ptr(r->ebx));
-        break;
+        {
+            r->eax = handle_puts(get_userspace_ptr(r->ebx));
+            break;
+        }
     case SYS_getkeys:
-        // r.ebx - result buffer
-        // r.ecx - max count of keys
+        {
+            // r.ebx - result buffer
+            // r.ecx - max count of keys
 
-        struct KeyboardEvent *ubuf = (struct KeyboardEvent*)get_userspace_ptr(r->ebx);
-        if (!ubuf) {
-            r->eax = -1;
+            struct KeyboardEvent* ubuf = (struct KeyboardEvent*)get_userspace_ptr(r->ebx);
+            if (!ubuf) {
+                r->eax = -1;
+                break;
+            }
+            r->eax = kbd_read_events(ubuf, r->ecx);
             break;
         }
-        r->eax = kbd_read_events(ubuf, r->ecx);
-        break;
     case SYS_time:
-        r->eax = pit_ticks;
-        break;
-    case SYS_setmode13:
-        uintptr_t im_buf = r->ebx;
-        vgaMode13();
-
-        if (mappages(get_cur_pgdir(), (void*)im_buf, 320*200, 0xA0000, PTE_W | PTE_U) < 0) {
-            r->eax = -2;
+        {
+            r->eax = pit_ticks;
             break;
         }
-        r->eax = 0;
-        break;
+    case SYS_setmode13:
+        {
+            uintptr_t im_buf = r->ebx;
+            vgaMode13();
 
-    case SYS_setmode3:
-        vgaMode3();
-        vga_clear_screen();
-        r->eax = 0;
-        break;
-    case SYS_sleep:
-        msleep(r->ebx);
-        r->eax = 0;
-        break;
-    case SYS_sound:
-        if (r->ebx == 0) {
-            off_speaker();
-        } else {
-            setup_speaker(r->ebx);
+            if (mappages(get_cur_pgdir(), (void*)im_buf, 320 * 200, 0xA0000, PTE_W | PTE_U) < 0) {
+                r->eax = -2;
+                break;
+            }
+            r->eax = 0;
+            break;
         }
-        r->eax = 0;
-        break;
+    case SYS_setmode3:
+        {
+            vgaMode3();
+            vga_clear_screen();
+            r->eax = 0;
+            break;
+        }
+    case SYS_sleep:
+        {
+            msleep(r->ebx);
+            r->eax = 0;
+            break;
+        }
+    case SYS_sound:
+        {
+            if (r->ebx == 0) {
+                off_speaker();
+            }
+            else {
+                setup_speaker(r->ebx);
+            }
+            r->eax = 0;
+            break;
+        }
     default:
         printk("Unknown syscall\n");
         r->eax = -1;
