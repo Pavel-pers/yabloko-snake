@@ -1,10 +1,10 @@
-#include <cstdint>
+#include <stdint.h>
 #include "snake_map.h"
 #include "snake_snake.h"
 
 
-static constexpr int8_t dir_dx[] = {-1, 0, 1,  0};
-static constexpr int8_t dir_dy[] = { 0, 1, 0, -1};
+static constexpr int8_t dir_dx[] = { 0, 1, 0, -1};
+static constexpr int8_t dir_dy[] = {-1, 0, 1,  0};
 
 void Snake::try_set_dir(const Dir new_dir) {
     if (((new_dir ^ dir) & 1) == 0)

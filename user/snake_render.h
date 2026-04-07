@@ -1,6 +1,7 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
+constexpr uint32_t VB_ADDR = 0xA00000;
 constexpr uint32_t SCREEN_W = 320;
 constexpr uint32_t SCREEN_H = 200;
 constexpr uint32_t CELL = 10;

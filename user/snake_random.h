@@ -1,10 +1,8 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
-uint32_t rand() {
-    static constexpr uint32_t BASE = 31;
-    static constexpr uint32_t K = 69696;
+inline uint32_t rand() {
     static uint32_t X_ = 1;
-    X_ = (X_ + BASE) * K;
+    X_ = (X_ + 31) * 69696;
     return X_;
 }

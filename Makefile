@@ -38,7 +38,7 @@ LDKERNELFLAGS = --script=script.ld
 endif
 
 OBJECTS = ./kernel/kstart.o ./kernel.o ./console.o ./drivers/vga.o ./drivers/uart.o ./drivers/keyboard.o \
-	./drivers/graphics.o \
+	./drivers/graphics.o ./drivers/speaker.o \
 	./cpu/idt.o ./cpu/gdt.o ./cpu/swtch.o ./cpu/vectors.o ./kernel/mem.o ./proc.o ./lib/string.o \
 	./fs/fs.o ./drivers/ata.o ./lib/string.o ./proc.o ./drivers/pit.o ./kernel/vm.o
 
@@ -105,12 +105,18 @@ debug-nox: image.bin
 		-ex "break _start" \
 		-ex "continue"
 
-USERPROGS=./user/false ./user/greet ./user/div0 ./user/shout ./user/badputs ./user/bss
+SNAKE_SRCS = $(wildcard user/snake_*.cpp)
+SNAKE_OBJS = $(SNAKE_SRCS:.cpp=.o)
+
+USERPROGS=./user/false ./user/greet ./user/div0 ./user/shout ./user/badputs ./user/bss ./user/snake
 
 fs.img: ./kernel.bin ./tools/mkfs $(USERPROGS)
 	./tools/mkfs $@ $< $(USERPROGS)
 
 LDFLAGS=-m elf_i386
+
+user/snake: $(SNAKE_OBJS) user/crt.o
+	$(LD) $(LDFLAGS) -o $@ -Ttext 0x401000 $^
 
 user/%: user/%.o user/crt.o
 	$(LD) $(LDFLAGS) -o $@ -Ttext 0x401000 $^
@@ -123,6 +129,9 @@ bootmain.o: bootmain.c
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+%.o: %.cpp
+	$(CC) $(CFLAGS) -fno-exceptions -fno-rtti -c $< -o $@
 
 %.o: %.S
 	$(CC) $(ASMFLAGS) $^ -o $@

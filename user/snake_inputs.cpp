@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include "snake_inputs.h"
 #include "../syscall.h"
 
 static uint8_t key_pressed[256];
@@ -10,7 +11,7 @@ void sync_input() {
     }
 
     struct KeyboardEvent events[64];
-    int n = syscall2(SYS_getkeys, (uint64_t)events, 64);
+    int n = syscall2(SYS_getkeys, (int)events, 64);
 
     for (int i = 0; i < n; i++) {
         uint8_t ch = events[i].scancode;

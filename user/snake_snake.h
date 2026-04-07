@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 #include "snake_map.h"
 
 constexpr uint32_t MAX_SNAKE = 32 * 20;
@@ -46,6 +46,10 @@ struct Snake
 
     bool gs_empty() const {
         return gs_head == gs_tail;
+    }
+
+    uint32_t gs_size() const {
+        return (gs_head - gs_tail + MAX_SNAKE) % MAX_SNAKE;
     }
 
     Snake(uint16_t x, uint16_t y);

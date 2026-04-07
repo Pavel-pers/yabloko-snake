@@ -32,6 +32,7 @@ namespace Menu
         if (start) {
             sfx_start();
         }
+        return start;
     }
 
     void render() {

@@ -20,6 +20,14 @@ struct KeyboardEvent {
 	uint8_t flag;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int syscall(int call, int arg);
 int syscall2(int call, int arg1, int arg2);
 int syscall3(int call, int arg1, int arg2, int arg3);
+
+#ifdef __cplusplus
+}
+#endif

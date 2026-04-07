@@ -1,12 +1,11 @@
 #include <stdint.h>
-#include <assert.h>
 #include "port.h"
 #include "speaker.h"
 
 const uint32_t PIT_FREQ = 1193182;
 
 void setup_speaker(uint32_t freq) {
-    assert(freq > 0);
+    if (freq == 0) return;
 
     uint32_t delta_freq = PIT_FREQ / freq;
 

@@ -1,7 +1,5 @@
 #include "snake_gameplay.h"
 
-#include <cassert>
-
 #include "snake_map.h"
 #include "snake_snake.h"
 #include "snake_render.h"
@@ -33,7 +31,7 @@ namespace Game
     }
 
     bool update() {
-        assert(alive);
+        if (!alive) return true;
 
         if (is_pressed(SC_W)) {
             snake.try_set_dir(UP);
@@ -97,6 +95,8 @@ namespace Game
 
         fill_rectangle(0, 0, 40, 9, COLOR_BG);
         draw_number(2, 2, score, COLOR_WHITE);
+
+        return false;
     }
 
     void render() {

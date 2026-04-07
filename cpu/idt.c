@@ -190,6 +190,10 @@ static void handle_syscall(registers_t* r) {
         vga_clear_screen();
         r->eax = 0;
         break;
+    case SYS_sleep:
+        msleep(r->ebx);
+        r->eax = 0;
+        break;
     case SYS_sound:
         if (r->ebx == 0) {
             off_speaker();

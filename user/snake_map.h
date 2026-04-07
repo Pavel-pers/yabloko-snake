@@ -1,5 +1,5 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 
 constexpr uint16_t MAP_W = 32;
 constexpr uint16_t MAP_H = 20;
@@ -22,7 +22,7 @@ struct Point
     Point() = default;
 };
 
-uint8_t map[MAP_H][MAP_W];
+extern uint8_t map[MAP_H][MAP_W];
 
 void generate_map();
 bool spawn_bonus();

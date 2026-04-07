@@ -1,6 +1,7 @@
 #include "snake_gameplay.h"
 #include "snake_menu.h"
 #include "snake_inputs.h"
+#include "snake_render.h"
 #include "../syscall.h"
 
 enum game_state
@@ -12,7 +13,7 @@ enum game_state
 
 static int state = STATE_MENU;
 
-void game_loop() {
+static void game_loop() {
     while (true) {
         sync_input();
 
@@ -30,7 +31,6 @@ void game_loop() {
         case STATE_PLAYING:
             {
                 bool game_over = Game::update();
-                Game::render();
                 if (game_over) {
                     state = STATE_GAMEOVER;
                     GameOver::init(Game::final_score());
@@ -50,4 +50,12 @@ void game_loop() {
         }
         syscall(SYS_sleep, 10);
     }
+}
+
+int main() {
+    render_init();
+    Menu::init();
+    game_loop();
+    render_shutdown();
+    return 0;
 }
